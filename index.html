@@ -71,10 +71,16 @@
             border-radius: 15px;
             text-align: center;
             transition: transform 0.3s;
+            cursor: pointer;
         }
         
         .member-card:hover {
             transform: translateY(-5px);
+        }
+        
+        .member-card.selected {
+            border: 3px solid #667eea;
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
         }
         
         .member-avatar {
@@ -142,6 +148,11 @@
             transform: scale(1.05);
         }
         
+        .upload-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
         input[type="file"] {
             display: none;
         }
@@ -157,12 +168,33 @@
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
         }
         
         .photo-card img {
             width: 100%;
             height: 150px;
             object-fit: cover;
+        }
+        
+        .photo-label {
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 5px;
+            text-align: center;
+            font-size: 0.8em;
+        }
+        
+        .member-gallery {
+            margin-bottom: 30px;
+        }
+        
+        .member-gallery h3 {
+            color: #333;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
         footer {
@@ -181,6 +213,15 @@
             font-size: 0.9em;
             margin-top: 10px;
         }
+        
+        .alert {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -194,22 +235,22 @@
             <div class="section">
                 <h2>Nossa Família</h2>
                 <div class="family-members">
-                    <div class="member-card">
+                    <div class="member-card" data-member="pai" onclick="selectMember(this)">
                         <div class="member-avatar">👨</div>
                         <div class="member-name">Pai</div>
                         <div class="member-role">Chefão da família</div>
                     </div>
-                    <div class="member-card">
+                    <div class="member-card" data-member="mae" onclick="selectMember(this)">
                         <div class="member-avatar">👩</div>
                         <div class="member-name">Mãe</div>
                         <div class="member-role">Coração do lar</div>
                     </div>
-                    <div class="member-card">
+                    <div class="member-card" data-member="filho" onclick="selectMember(this)">
                         <div class="member-avatar">👦</div>
                         <div class="member-name">Filho</div>
                         <div class="member-role">Junior</div>
                     </div>
-                    <div class="member-card">
+                    <div class="member-card" data-member="filha" onclick="selectMember(this)">
                         <div class="member-avatar">👧</div>
                         <div class="member-name">Filha</div>
                         <div class="member-role">Princesa</div>
@@ -220,22 +261,41 @@
             <div class="section">
                 <h2>📸 Galeria de Fotos</h2>
                 <div class="upload-section">
-                    <div class="upload-area" onclick="document.getElementById('photoInput').click()">
+                    <div class="alert" id="selectionAlert">
+                        👆 Clique em um membro da família acima para selecionar!
+                    </div>
+                    
+                    <div class="upload-area" id="uploadArea">
                         <div class="upload-icon">📁</div>
                         <h3>Adicionar Fotos</h3>
-                        <p>Clique aqui ou arraste suas fotos</p>
-                        <button class="upload-btn">Escolher Fotos</button>
+                        <p>Selecione um membro da família primeiro</p>
+                        <button class="upload-btn" id="uploadBtn" disabled onclick="document.getElementById('photoInput').click()">Escolher Fotos</button>
                     </div>
                     <input type="file" id="photoInput" multiple accept="image/*" onchange="handlePhotos(this)">
-                    <div class="gallery" id="gallery"></div>
                 </div>
             </div>
             
-            <div class="section">
-                <h2>💬 Mensagens</h2>
-                <div class="upload-section">
-                    <textarea placeholder="Deixe uma mensagem para a família..." style="width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #ccc; min-height: 100px; resize: vertical;"></textarea>
-                    <button class="upload-btn" onclick="alert('Obrigado pela mensagem! ❤️')">Enviar</button>
+            <div class="section" id="gallerySection">
+                <h2>📷 Fotos por Membro</h2>
+                
+                <div class="member-gallery" id="gallery-pai">
+                    <h3>👨 Pai</h3>
+                    <div class="gallery" id="gallery-pai-content"></div>
+                </div>
+                
+                <div class="member-gallery" id="gallery-mae">
+                    <h3>👩 Mãe</h3>
+                    <div class="gallery" id="gallery-mae-content"></div>
+                </div>
+                
+                <div class="member-gallery" id="gallery-filho">
+                    <h3>👦 Filho</h3>
+                    <div class="gallery" id="gallery-filho-content"></div>
+                </div>
+                
+                <div class="member-gallery" id="gallery-filha">
+                    <h3>👧 Filha</h3>
+                    <div class="gallery" id="gallery-filha-content"></div>
                 </div>
             </div>
         </div>
@@ -247,24 +307,85 @@
     </div>
     
     <script>
+        let selectedMember = null;
+        
+        // Load photos from localStorage
+        function loadPhotos() {
+            const members = ['pai', 'mae', 'filho', 'filha'];
+            members.forEach(member => {
+                const photos = JSON.parse(localStorage.getItem('fotos_' + member) || '[]');
+                const gallery = document.getElementById('gallery-' + member + '-content');
+                gallery.innerHTML = '';
+                photos.forEach(photoData => {
+                    const div = document.createElement('div');
+                    div.className = 'photo-card';
+                    div.innerHTML = `<img src="${photoData}" alt="Foto"><div class="photo-label">${getMemberName(member)}</div>`;
+                    gallery.appendChild(div);
+                });
+            });
+        }
+        
+        function getMemberName(member) {
+            const names = {
+                pai: 'Pai',
+                mae: 'Mãe',
+                filho: 'Filho',
+                filha: 'Filha'
+            };
+            return names[member] || member;
+        }
+        
+        function selectMember(card) {
+            // Remove previous selection
+            document.querySelectorAll('.member-card').forEach(c => c.classList.remove('selected'));
+            
+            // Select new member
+            card.classList.add('selected');
+            selectedMember = card.dataset.member;
+            
+            // Update UI
+            document.getElementById('selectionAlert').innerHTML = `✅ ${getMemberName(selectedMember)} selecionado! Agora escolha as fotos.`;
+            document.getElementById('uploadBtn').disabled = false;
+            document.getElementById('uploadArea').querySelector('p').textContent = 'Clique no botão para escolher as fotos de ' + getMemberName(selectedMember);
+        }
+        
         function handlePhotos(input) {
-            const gallery = document.getElementById('gallery');
             const files = input.files;
+            
+            if (!selectedMember) {
+                alert('Por favor, selecione um membro da família primeiro!');
+                return;
+            }
+            
+            const gallery = document.getElementById('gallery-' + selectedMember + '-content');
+            const existingPhotos = JSON.parse(localStorage.getItem('fotos_' + selectedMember) || '[]');
             
             for (let file of files) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    const photoData = e.target.result;
+                    
+                    // Save to localStorage
+                    existingPhotos.push(photoData);
+                    localStorage.setItem('fotos_' + selectedMember, JSON.stringify(existingPhotos));
+                    
+                    // Display photo
                     const div = document.createElement('div');
                     div.className = 'photo-card';
-                    div.innerHTML = `<img src="${e.target.result}" alt="Foto">`;
+                    div.innerHTML = `<img src="${photoData}" alt="Foto"><div class="photo-label">${getMemberName(selectedMember)}</div>`;
                     gallery.appendChild(div);
                 };
                 reader.readAsDataURL(file);
             }
+            
+            alert(`✅ ${files.length} foto(s) adicionada(s) para ${getMemberName(selectedMember)}!`);
+            
+            // Reset file input
+            input.value = '';
         }
         
         // Drag and drop
-        const uploadArea = document.querySelector('.upload-area');
+        const uploadArea = document.getElementById('uploadArea');
         
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -278,10 +399,19 @@
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.style.background = '';
+            
+            if (!selectedMember) {
+                alert('Por favor, selecione um membro da família primeiro!');
+                return;
+            }
+            
             const input = document.getElementById('photoInput');
             input.files = e.dataTransfer.files;
             handlePhotos(input);
         });
+        
+        // Load photos on page load
+        loadPhotos();
     </script>
 </body>
 </html>
