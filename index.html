@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Família</title>
+    <title>Minha Família - Fotos</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
@@ -13,36 +13,30 @@
         .subtitle { font-size: 1.2em; opacity: 0.9; }
         .content { padding: 40px; }
         .section { margin-bottom: 30px; }
-        h2 { color: #333; margin-bottom: 15px; font-size: 1.5em; }
+        h2 { color: #333; margin-bottom: 15px; }
         
-        .family-members { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .instructions { background: #e3f2fd; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .instructions h3 { color: #1565c0; margin-bottom: 10px; }
+        .instructions ol { margin-left: 20px; color: #333; }
+        .instructions li { margin-bottom: 8px; }
+        
+        .family-members { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .member-card { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); padding: 20px; border-radius: 15px; text-align: center; cursor: pointer; transition: all 0.3s; border: 3px solid transparent; }
         .member-card:hover { transform: translateY(-5px); }
         .member-card.selected { border-color: #667eea; background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%); }
         .member-avatar { width: 80px; height: 80px; border-radius: 50%; background: #ddd; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; font-size: 2em; }
         .member-name { font-weight: bold; color: #333; }
-        .member-role { color: #666; font-size: 0.8em; }
         
-        .upload-section { background: #f8f9fa; padding: 25px; border-radius: 15px; border: 2px dashed #667eea; }
-        .upload-area { text-align: center; padding: 30px; border: 2px dashed #ccc; border-radius: 10px; cursor: pointer; transition: all 0.3s; }
-        .upload-area:hover { border-color: #667eea; background: #f0f0ff; }
-        .upload-icon { font-size: 2.5em; margin-bottom: 10px; }
-        .upload-btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 30px; border-radius: 25px; font-size: 1em; cursor: pointer; margin-top: 10px; }
-        .upload-btn:hover { transform: scale(1.05); }
-        .upload-btn:disabled { background: #ccc; cursor: not-allowed; }
-        input[type="file"] { display: none; }
-        
-        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; margin-top: 15px; }
-        .photo-card { border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .photo-card img { width: 100%; height: 120px; object-fit: cover; }
-        .photo-label { background: rgba(0,0,0,0.7); color: white; padding: 4px; text-align: center; font-size: 0.75em; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; }
+        .photo-card { border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .photo-card:hover { transform: scale(1.05); }
+        .photo-card img { width: 100%; height: 150px; object-fit: cover; }
+        .photo-label { background: rgba(0,0,0,0.7); color: white; padding: 8px; text-align: center; font-size: 0.9em; }
         
         .member-gallery { margin-bottom: 25px; }
         .member-gallery h3 { color: #333; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
         
-        .loading { opacity: 0.5; pointer-events: none; }
-        .spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid #f3f3f3; border-top: 3px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .photo-count { background: #4caf50; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7em; }
         
         footer { background: #333; color: white; text-align: center; padding: 20px; }
         .heart { color: #f5576c; }
@@ -57,38 +51,37 @@
         
         <div class="content">
             <div class="section">
-                <h2>Nossa Família</h2>
+                <div class="instructions">
+                    <h3>📱 Como adicionar fotos:</h3>
+                    <ol>
+                        <li>Envie uma foto aqui no Telegram para mim</li>
+                        <li>Me diga qual membro da família (Pai, Mãe, Filho ou Filha)</li>
+                        <li>Eu adiciono a foto no site automaticamente!</li>
+                    </ol>
+                </div>
+                
+                <h2>Selecione um membro:</h2>
                 <div class="family-members">
-                    <div class="member-card" data-member="pai" onclick="selectMember(this)">
+                    <div class="member-card" onclick="filterGallery('pai')">
                         <div class="member-avatar">👨</div>
                         <div class="member-name">Pai</div>
                     </div>
-                    <div class="member-card" data-member="mae" onclick="selectMember(this)">
+                    <div class="member-card" onclick="filterGallery('mae')">
                         <div class="member-avatar">👩</div>
                         <div class="member-name">Mãe</div>
                     </div>
-                    <div class="member-card" data-member="filho" onclick="selectMember(this)">
+                    <div class="member-card" onclick="filterGallery('filho')">
                         <div class="member-avatar">👦</div>
                         <div class="member-name">Filho</div>
                     </div>
-                    <div class="member-card" data-member="filha" onclick="selectMember(this)">
+                    <div class="member-card" onclick="filterGallery('filha')">
                         <div class="member-avatar">👧</div>
                         <div class="member-name">Filha</div>
                     </div>
-                </div>
-            </div>
-            
-            <div class="section">
-                <h2>📸 Adicionar Fotos</h2>
-                <div class="upload-section">
-                    <div class="upload-area" id="uploadArea">
-                        <div class="upload-icon">📁</div>
-                        <h3>Selecione um membro da família primeiro</h3>
-                        <p>Clique em um card acima e depois aqui para adicionar fotos</p>
-                        <button class="upload-btn" id="uploadBtn" disabled onclick="document.getElementById('photoInput').click()">Escolher Fotos</button>
+                    <div class="member-card" onclick="showAll()">
+                        <div class="member-avatar">👨‍👩‍👧‍👦</div>
+                        <div class="member-name">Todos</div>
                     </div>
-                    <input type="file" id="photoInput" multiple accept="image/*" onchange="handlePhotos(this)">
-                    <div id="uploadStatus"></div>
                 </div>
             </div>
             
@@ -104,26 +97,35 @@
     </div>
     
     <script>
-        const REPO_OWNER = 'Delphus123';
-        const REPO_NAME = 'openclaw-test-repo';
-        const PHOTOS_FILE = 'fotos.json';
-        const GITHUB_TOKEN = ''; // Will be provided by user or use public approach
-        
-        let selectedMember = null;
-        let allPhotos = { pai: [], mae: [], filho: [], filha: [] };
+        const PHOTOS = {
+            pai: [],
+            mae: [],
+            filho: [],
+            filha: []
+        };
         
         const memberNames = { pai: '👨 Pai', mae: '👩 Mãe', filho: '👦 Filho', filha: '👧 Filha' };
         
         // Load photos from GitHub
         async function loadPhotos() {
             try {
-                // Try to load from GitHub raw content
-                const response = await fetch(`https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${PHOTOS_FILE}`);
+                const response = await fetch('https://api.github.com/repos/Delphus123/openclaw-test-repo/contents/photos');
                 if (response.ok) {
-                    allPhotos = await response.json();
+                    const files = await response.json();
+                    for (const file of files) {
+                        if (file.name.endsWith('.jpg') || file.name.endsWith('.png') || file.name.endsWith('.jpeg') || file.name.endsWith('.gif')) {
+                            const parts = file.name.split('_');
+                            if (parts.length >= 2) {
+                                const member = parts[0];
+                                if (PHOTOS[member]) {
+                                    PHOTOS[member].push(file.download_url);
+                                }
+                            }
+                        }
+                    }
                 }
             } catch (e) {
-                console.log('Could not load from GitHub, using local storage');
+                console.log('Error loading photos:', e);
             }
             renderGalleries();
         }
@@ -132,15 +134,18 @@
             const container = document.getElementById('allGalleries');
             container.innerHTML = '';
             
-            Object.keys(allPhotos).forEach(member => {
-                if (allPhotos[member].length > 0) {
+            Object.keys(PHOTOS).forEach(member => {
+                if (PHOTOS[member].length > 0) {
                     const div = document.createElement('div');
                     div.className = 'member-gallery';
-                    div.innerHTML = `<h3>${memberNames[member]}</h3><div class="gallery" id="gallery-${member}"></div>`;
+                    div.innerHTML = `
+                        <h3>${memberNames[member]} <span class="photo-count">${PHOTOS[member].length}</span></h3>
+                        <div class="gallery" id="gallery-${member}"></div>
+                    `;
                     container.appendChild(div);
                     
                     const gallery = div.querySelector('.gallery');
-                    allPhotos[member].forEach(photo => {
+                    PHOTOS[member].forEach(photo => {
                         const card = document.createElement('div');
                         card.className = 'photo-card';
                         card.innerHTML = `<img src="${photo}" alt="Foto"><div class="photo-label">${memberNames[member]}</div>`;
@@ -148,76 +153,22 @@
                     });
                 }
             });
-        }
-        
-        function selectMember(card) {
-            document.querySelectorAll('.member-card').forEach(c => c.classList.remove('selected'));
-            card.classList.add('selected');
-            selectedMember = card.dataset.member;
             
-            document.querySelector('.upload-area h3').textContent = `Adicionar fotos para ${memberNames[member]}`;
-            document.querySelector('.upload-area p').textContent = 'Clique no botão para escolher as fotos';
-            document.getElementById('uploadBtn').disabled = false;
-        }
-        
-        async function handlePhotos(input) {
-            const files = input.files;
-            if (!selectedMember) {
-                alert('Selecione um membro da família primeiro!');
-                return;
+            if (container.innerHTML === '') {
+                container.innerHTML = '<p style="text-align:center;color:#666;">Nenhuma foto ainda. Envie fotos pelo Telegram!</p>';
             }
-            
-            const status = document.getElementById('uploadStatus');
-            status.innerHTML = '<div class="spinner"></div> Processando fotos...';
-            document.querySelector('.upload-section').classList.add('loading');
-            
-            for (let file of files) {
-                const base64 = await toBase64(file);
-                // Compress and store
-                allPhotos[selectedMember].push(base64);
-            }
-            
-            // Save to localStorage as backup
-            localStorage.setItem('fotos_familia', JSON.stringify(allPhotos));
-            
-            renderGalleries();
-            
-            // Ask if user wants to save to GitHub
-            const saveToGitHub = confirm(`${files.length} foto(s) adicionada(s)!\n\nDeseja salvar no site (GitHub)?\n\nPara salvar, será necessário configurar um token.`);
-            
-            if (saveToGitHub) {
-                status.innerHTML = '⚠️ Para salvar permanentemente, é preciso configurar o GitHub Token.\n\nEntre em contato com o administrador do site.';
-            } else {
-                status.innerHTML = `✅ ${files.length} foto(s) adicionada(s)!\n(Apenas neste navegador)`;
-            }
-            
-            document.querySelector('.upload-section').classList.remove('loading');
-            input.value = '';
         }
         
-        function toBase64(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = error => reject(error);
-            });
+        function filterGallery(member) {
+            document.querySelectorAll('.member-gallery').forEach(g => g.style.display = 'none');
+            document.getElementById('gallery-' + member).parentElement.style.display = 'block';
         }
         
-        // Drag and drop
-        const uploadArea = document.getElementById('uploadArea');
-        uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.style.background = '#f0f0ff'; });
-        uploadArea.addEventListener('dragleave', () => { uploadArea.style.background = ''; });
-        uploadArea.addEventListener('drop', e => {
-            e.preventDefault();
-            uploadArea.style.background = '';
-            if (!selectedMember) { alert('Selecione um membro primeiro!'); return; }
-            const input = document.getElementById('photoInput');
-            input.files = e.dataTransfer.files;
-            handlePhotos(input);
-        });
+        function showAll() {
+            document.querySelectorAll('.member-gallery').forEach(g => g.style.display = 'block');
+        }
         
-        // Initialize
+        // Load photos on page load
         loadPhotos();
     </script>
 </body>
